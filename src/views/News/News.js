@@ -103,7 +103,6 @@ export default class Car extends Component {
                 .then(response => response.json())
                 .then(json => {
                     var arr = json.results, i, j = "", x = "", fd = this.arr;
-                    console.log(arr);
                     if (arr.length !== 0) {
                         for (i in arr) {
                             for (x in arr[i].classification_1.classes) {
@@ -220,7 +219,6 @@ export default class Car extends Component {
         }
     }
 
-
     myStopFunction() {
         clearInterval(this.APIStatus);
     }
@@ -229,7 +227,10 @@ export default class Car extends Component {
         this.setState({ ArticleList: [] });
         var url = "https://ypgfg7d5t6.execute-api.eu-west-1.amazonaws.com/Prod/v1/entity-news";
         var method = 'POST';
-        // var body = '[{"entity_id":"de00a1eaa0","names":["Dell"],"jurisdiction":"UK","entity_type":"Organization","start_date": "2005-01-20","end_date": "2020-03-04"}]';
+        // Invalid test data
+        //var body = '[{"entity_id":"test0009","names":["Ebay7"],"jurisdiction":"VE","entity_type":"person","start_date": "2020-03-04","end_date": "2020-03-06"}]';
+        // Valid test data
+        //var body = '[{"entity_id":"de00a1eaa0","names":["Oracle"],"jurisdiction":"US","entity_type":"Organization","start_date": "2005-01-20","end_date": "2020-03-04"}]';
         if (this.state.JsonFormat !== "") {
             document.getElementById("loader-wrapper").style.display = "block";
             var myHeaders = new Headers();
@@ -251,11 +252,12 @@ export default class Car extends Component {
 
                     key = Object.keys(jsObj.News);
                     for (j in key) {
-
                         if (jsObj.News[key[j]].status === "done") {
                             this.myStopFunction();
                             for (i in jsObj.News[key[j]].classifications) {
-                                arr.push(jsObj.News[key[j]].classifications[i]._links.articles);
+                                if (jsObj.News[key[j]].classifications[i].count !== 0) {
+                                    arr.push(jsObj.News[key[j]].classifications[i]._links.articles);
+                                }
                             }
                         }
                         else {
@@ -265,8 +267,13 @@ export default class Car extends Component {
                             }
                         }
                     }
-                    this.ListArticle(arr);
-                    this.jsons = "";
+                    if (arr.length === 0 && jsObj.News[key[j]].status ==="done") {
+                        document.getElementById("loader-wrapper").style.display = "none";
+                    }
+                    else {
+                        this.ListArticle(arr);
+                        this.jsons = "";
+                    }
                 })
                 .catch(error => console.log('error', error));
         }
@@ -278,8 +285,7 @@ export default class Car extends Component {
                 icon: "info",
                 timer: 2000,
                 button: false
-              })
-            //alert("Please fill the required fields");
+            })
         }
     }
 
@@ -318,7 +324,6 @@ export default class Car extends Component {
                 .catch(error => console.log('error', error));
         }.bind(this)
     }
-
 
     removeError = (string) => {
         var element = document.getElementById(string);
